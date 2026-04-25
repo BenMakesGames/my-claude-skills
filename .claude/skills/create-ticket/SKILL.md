@@ -6,104 +6,151 @@ argument-hint: <feature description>
 
 # Create Ticket: $ARGUMENTS
 
-You are creating one or more implementation tickets based on the user's feature description. The goal is to produce tickets detailed enough that `/ticket` can implement them without ambiguity. Follow this structured workflow:
+Create one or more implementation tickets from the user's feature description. Tickets must be detailed enough that `/implement-ticket` can implement without ambiguity. Workflow:
 
 ## Phase 1: Research
 
-Thorough codebase research is critical — tickets that reference wrong patterns or miss existing infrastructure cause implementation friction.
+Thorough codebase research is critical — tickets referencing wrong patterns or missing existing infrastructure cause implementation friction.
 
-1. Read recently completed tickets in `docs/tickets/complete/` to understand the ticket format, level of detail, and conventions (these are your format exemplars)
-2. Read the relevant `docs/` reference files and `CLAUDE.md` files for the areas involved
-3. Identify the existing codebase patterns most relevant to the feature. The user's description will often reference analogous systems (e.g., "like the inventory system" or "similar to how achievements work"). Thoroughly read those analogous systems — their modules, components, data structures, helpers — so you can mirror their patterns accurately in the ticket
-4. Identify any enums, services, or infrastructure that the new feature will need to touch or extend
-5. Check for naming conventions, file organization patterns, and architectural constraints
+1. Find and read related completed tickets in `docs/tickets/complete/`.
+2. Read relevant `docs/` reference files for areas involved.
+3. Identify existing codebase patterns relevant to the feature. User may reference analogous systems (e.g., "like the inventory system", "similar to how achievements work"). Read those systems thoroughly — modules, components, data structures, helpers — for context.
 
-## Phase 2: Scope
+## Phase 2: Clarify
 
-Determine how many tickets are needed. The user may describe one feature or several related features. Consider:
+Before asking, sort each open question into one of three buckets. Only the first goes to the user.
 
-- **One ticket per deployable unit of work**: Each ticket should be implementable and testable on its own
-- **Dependency ordering**: If ticket B depends on ticket A's artifacts, make that explicit in B's Prerequisites section
-- **User guidance**: The user may suggest how to split the work — follow their lead
+**Ask the user — design-level or architecture-level decisions the implementer can't unilaterally make.**
 
-**Do not number tickets** (e.g., `03-vn-system.md`). The Prerequisites section already handles ordering and is more flexible than linear numbers. Use descriptive names only (e.g., `vn-system.md`).
+- Requirements with multiple interpretations or that contradict documented design
+- Domain-specific values, names, configs the codebase can't tell you (e.g., balance numbers, copy strings, design intent)
+- Scope boundaries — what's in vs. out for each ticket
+- Dialog vs. page, modal vs. inline, separate state vs. flag on existing state
+- Public API surface, breaking changes, cross-module contracts
 
-Present the proposed ticket split to the user and confirm before writing.
+**Defer to the implementer — leave un-decided, don't ask the user.** Implementer is another instance of you running `/implement-ticket` with full research access; trust them with local taste:
+- Local idiom (HashSet vs. Dictionary, list vs. array, struct vs. record)
+- Easing curves, animation timing tweaks, exact pixel offsets
+- Field names, variable names, method names within an established pattern
+- Inline helper vs. extract class — when both reasonable
+- Micro-style: (a) vs. (b) when both work and neither is clearly better
 
-## Phase 3: Clarify
+For defer-class questions, either omit or surface under "Open Decisions" (see template) — never pre-decide for the implementer, never bother the user.
 
-Ask the user about anything that would block writing a precise ticket:
+**Don't ask — research first.** Anything answerable by reading code. If unsure, read before asking.
 
-- **Ambiguities**: Requirements that could be interpreted multiple ways
-- **Design choices**: Decisions that affect the ticket structure (e.g., dialog vs. page, new entity vs. extending existing)
-- **Scope boundaries**: What's in vs. out for each ticket
-- **Data/content questions**: Specific values, names, or configurations needed
+Keep questions focused, concrete, bucketed. Don't pad user's queue with implementer-class questions.
 
-Keep questions focused and concrete. Don't ask about things you can reasonably infer from the codebase patterns you've already read.
+## Phase 3: Scope
+
+Determine how many tickets are needed. User may describe one or several related features. Consider:
+
+- **One ticket per deployable unit**: Each ticket implementable and testable on its own
+- **Dependency ordering**: If B depends on A's artifacts, list in B's Prerequisites
+- **User guidance**: User may suggest a split — follow their lead
+
+Present proposed split to user; confirm before writing.
 
 ## Phase 4: Write Tickets
 
-Write each ticket to `docs/tickets/<ticket-name>.md` (no date prefix — dates are added when tickets are completed).
+Write each ticket to `docs/tickets/<ticket-name>.md`. **No** date prefix (added on completion) or numeric index (e.g., `03-vn-system.md`) — Prerequisites carries ordering, more flexible than linear sequence. Descriptive names only.
 
 ### Ticket Shape
 
-**Ticket shape varies by task type.** Match the format to the work, not the other way around:
+**Ticket shape varies by task type.** Match format to work, not the other way around:
 
-- **Implementation tickets** — the full template below (numbered steps, files, test plan). Use a flat `## Implementation` section with numbered steps; group logically (e.g., "Model changes", "Service changes", "Component changes") when it helps clarity.
-- **Design tickets** (e.g., hero progression, naming decisions) — simpler format: Summary, Context, design-specific sections, and a minimal test plan.
+- **Implementation tickets** — full template below (numbered steps, files, test plan). Flat `## Implementation` with numbered steps in execution order. No grouping subsections (Model / Service / UI) — if ticket needs them, split it or re-sequence steps.
+- **Design tickets** (e.g., hero progression, naming decisions) — simpler format: Context, design-specific sections, minimal test plan.
 - **Refactoring tickets** — flat `## Implementation` with numbered steps across the whole stack.
 
 ### Implementation Ticket Template
 
+Sections ordered for top-down reading by LLM implementer: gate checks (Prerequisites), boundary + orientation (Scope, Relevant Docs, Constraints), decisions before steps (Open Decisions, Acceptance Criteria), then work (Implementation, Test Plan).
+
 ```markdown
 # Ticket Title
 
-## Summary
-1-2 sentences describing the change at a high level.
-
 ## Context
 **Current behavior**: What exists today.
-**New behavior**: What will exist after implementation.
+**New behavior**: What exists after implementation. Lead with user-visible / system-level change in one sentence, add nuance after. Serves as ticket summary — no separate Summary section.
 
 ## Prerequisites
-- List any tickets, features, or artifacts that must exist before this ticket can be implemented
-- Omit this section entirely if there are no prerequisites
-
-## Acceptance Criteria
-- [ ] What must be true when this ticket is done — behavioral, scope-defining assertions (e.g., "Users can filter by date range", "Settings persist across sessions")
-- [ ] Each criterion should be unambiguously pass/fail
+- Tickets, features, or artifacts that must exist before implementation
+- Omit entirely if none
 
 ## Scope
-Brief summary of the areas touched (e.g., "new data model + service layer, extends the notification system, adds settings UI"). Exact file paths belong in the implementation steps where they have context — this section is a quick-scan overview of blast radius.
+### In scope
+Brief summary of goals + areas touched (e.g., "new data model + service layer, extends notification system, adds settings UI"). Blast-radius overview, not file manifest — Implementation lists files.
+
+### Out of scope
+Explicit non-goals: things a reader might assume are included but aren't, plus deferred follow-ups. Omit only if nothing to call out.
+
+## Relevant Docs & Anchors
+Pointers to read before coding:
+- **Design docs**: e.g., `docs/heroes.md §Ansa`, `docs/relics.md §Boss modifiers`.
+- **Analogue tickets**: completed tickets whose patterns this mirrors (e.g., `docs/tickets/complete/2026-04-19 meliono-hero.md`).
+- **Code anchors**: key symbols/methods to read first (`HeroTypeInfo.Info`, `Encounter.SpawnNextPiece`, the stack-render loop in `Playing.Draw`).
+
+Omit if Implementation steps already name everything needed.
+
+## Constraints & Gotchas
+Optional. Cross-cutting hazards affecting multiple steps, easy to miss if buried inline:
+- Project reference rules (e.g., `Astromino.Data` cannot import `Astromino.UI`).
+- Expected compiler warnings (e.g., CS8509 on hero switches).
+- Save-format / serialization compatibility constraints.
+- Framework quirks documented in earlier ticket Learnings.
+
+Omit if none apply.
+
+## Open Decisions
+Optional. Defer-to-implementer decisions worth surfacing — local-taste questions the implementer should call during coding (optionally raising with user) rather than pre-deciding here. Omit if none. Each point: one line, question + default if known.
+
+Example entries:
+1. **Easing curve** — linear vs. smoothstep for the per-tile tween. Default: linear; eyeball during manual testing.
+2. **Inline list vs. dedicated VFX class** — inline simpler; dedicated right if reuse is imminent. Default: inline.
+
+## Acceptance Criteria
+Inspectable assertions defining "done" — state, signatures, file existence, enum values, behavioral facts. Each unambiguously pass/fail by code inspection or unit test. **Distinct from Test Plan**: *what must be true*, not *how to verify*. Don't restate Test Plan steps.
+
+- [ ] Example: "`HeroTypeInfo.Info[HeroType.Ansa]` populated with starting bag, starting Coin, portrait, and flavor fields matching `docs/heroes.md §Ansa`."
+- [ ] Example: "`Encounter.ApplyBossModifier` switch over `BossModifierType` is exhaustive: every enum value handled, no `default` fallthrough."
 
 ## Implementation
+Flat numbered list. **No grouping subsections** — if ticket needs Model / Service / UI sub-headers, split it or re-sequence into one linear flow.
+
 ### 1. Step Title
-Detailed implementation instructions referencing specific files, patterns, and analogous code to mirror. Lead with *why* this step is needed, then point to where and what to change.
+Why (intent) → where (anchor by symbol/pattern, never line number) → what (prose, not transcribed code).
+
 ### 2. Next Step Title
 ...
 
 ## Test Plan
-- [ ] How to verify the acceptance criteria — mechanical, action-oriented steps (e.g., "Open settings, change theme, reload — confirm theme persists", "Create item with empty name, confirm validation error")
+Manual + integration verification of acceptance criteria: build/test commands, in-game steps, regression spot-checks. Action-oriented ("Open settings, change theme, reload — confirm theme persists"). **Distinct from Acceptance Criteria**: *how to verify*, not *what must be true*.
+
+- [ ] Example: "`dotnet build -o /tmp/build-check` and `dotnet test` pass."
+- [ ] Example: "Start an Ansa run; first piece drawn is a pentomino; Coin readout shows 4."
 ```
 
 ### Writing Guidelines
 
-- **Lead with intent, follow with location**: For each implementation step, state *why* the change is needed before *where* to make it. The "why" survives refactors; the "where" is a convenience that may drift.
-- **Be specific about what, directional about how**: Name the exact files, entities, and enums involved. For method signatures and field types, point to the existing method/entity to mirror rather than spelling out the full signature — the implementer will read the current code, and transcribed signatures go stale.
-- **Mirror existing patterns by reference**: When the ticket calls for something analogous to existing code, name the specific exemplar and call out only the *differences* from it. Don't transcribe the full structure — it may have changed by implementation time.
-- **Keep scope tight**: Each ticket should be one coherent unit of work. If you find yourself writing a ticket that feels too large, consider splitting it.
-- **Don't over-specify presentation**: Give enough structure (component names, layout sketches, behavioral descriptions) for the implementer to build it, but don't dictate every styling detail or exact positioning.
-- **File paths live in implementation steps**: Reference specific files where the implementer will need them — inside the step that explains *why* the change is needed. Don't duplicate paths into a separate section where they lose context and go stale.
-- **Assume the implementer verifies**: Tickets are read alongside the current codebase. Provide enough detail to orient the implementer (which files, which patterns, which analogues), but don't try to be a frozen snapshot of the code.
+- **Lead with intent, follow with location**: State *why* before *where*. The why survives refactors; the where may drift.
+- **Be specific about what, directional about how**: Name exact files, entities, enums. For signatures and types, point to the method/entity to mirror rather than spelling out the full signature — transcribed signatures go stale.
+- **Don't transcribe method bodies**: Describe algorithm in prose, point to analogous method; don't paste full C# into the ticket. Transcribed bodies go stale on first refactor of surrounding conventions (field naming, helpers, idioms). Exception: tricky off-by-one math, non-obvious algorithm steps, or specific data shapes where prose is ambiguous — transcribe only the load-bearing fragment, not the whole method.
+- **No line numbers**: Never cite as `File.cs:388-395`. Line numbers rot on first edit above the region. Anchor by method name, pattern, or grep-able landmark (e.g., "the stack-render loop in `Playing.Draw`", "the `new Encounter(...)` call site in `Playing`").
+- **Mirror existing patterns by reference**: For analogous code, name the exemplar and call out only the *differences*. Don't transcribe the full structure — it may have changed by implementation time.
+- **Keep scope tight**: One coherent unit of work per ticket. If it feels too large, split it.
+- **Don't over-specify presentation**: Enough structure (component names, layout sketches, behavioral descriptions) to build it, but don't dictate every styling detail or exact position.
+- **Defer local-taste decisions to the implementer**: For choices between reasonable local idioms (HashSet vs. Dictionary, inline list vs. dedicated class, easing curve, exact field name), don't pre-decide. Omit or surface under "Open Decisions" with a default.
+- **Prefer symbols over paths**: Anchor by symbol name (`Encounter.SpawnNextPiece`, `BossModifierType` enum, `CoinCollectEffect` class) — durable across moves/renames, grep-able. Add a path only when the symbol is ambiguous or the implementer would have to hunt. Inline paths in the step that needs them, not in a separate sidebar.
+- **Assume the implementer verifies**: Tickets read alongside current codebase. Provide enough to orient (files, patterns, analogues), don't be a frozen snapshot.
 
 ## Phase 5: Review
 
-After writing, do a quick self-check:
+After writing, quick self-check on things Writing Guidelines don't catch:
 
-- Does each ticket's Prerequisites section accurately list what must exist first?
-- Would an implementer using `/ticket` have enough detail to orient themselves without re-reading the analogous systems?
-- Does each step lead with intent (why) before location (where)?
-- Are the tickets ordered so that dependencies flow forward (no circular prerequisites)?
-- Are the acceptance criteria unambiguously pass/fail, and distinct from the test plan steps?
+- Does each ticket's Prerequisites accurately list what must exist first, and do tickets order so dependencies flow forward (no cycles)?
+- Would an implementer running `/implement-ticket` have enough orientation (Relevant Docs & Anchors, named analogues) to start without a guess-and-grep pass?
+- Are Acceptance Criteria unambiguously pass/fail by code inspection or unit test, and *disjoint* from Test Plan steps (no item restated as both)?
+- Are cross-cutting hazards (project reference rules, expected warnings, save-format compat) hoisted to Constraints & Gotchas instead of buried in a single Implementation step?
 
-Present the completed tickets to the user with a brief summary of each.
+Present completed tickets with brief summary of each.

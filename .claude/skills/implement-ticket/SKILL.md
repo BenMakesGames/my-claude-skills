@@ -6,69 +6,88 @@ argument-hint: <ticket-name>
 
 # Implement Ticket: $ARGUMENTS
 
-You are implementing a ticket from the unimplemented features list. Follow this structured workflow:
+Implement a ticket from `docs/tickets/`. Tickets are written by `/create-ticket` and follow templates documented there — Implementation, Design, or Refactoring shape.
 
-## Phase 1: Review
+## Phase 1: Orient
 
-1. Locate the ticket matching "$ARGUMENTS" in the `docs/tickets/` directory
-2. Read the relevant `docs/` reference files for the area you'll be working in. Reference docs exist in the workspace root (`docs/`)  and contain accumulated patterns and gotchas from previous tickets.
-3. Read the relevant `CLAUDE.md` file(s)
-4. Read all code files referenced in the ticket
-5. Understand the current state of the implementation
+1. Locate ticket matching "$ARGUMENTS" in `docs/tickets/` (skip `docs/tickets/complete/` — that's the archive).
+2. Read ticket end-to-end. Note shape (Implementation / Design / Refactoring) and which sections are present.
+3. Read every doc in **Relevant Docs & Anchors**.
+4. Read every code symbol named in the ticket — Implementation steps, Acceptance Criteria, Constraints & Gotchas, Open Decisions. Don't paraphrase the ticket; ticket points at code, code is truth.
+5. Read `CLAUDE.md` and any nested `CLAUDE.md` for areas you'll touch.
+6. Internalize **Constraints & Gotchas** before writing code — cross-cutting hazards easy to miss inline.
 
 ## Phase 2: Check Prerequisites
 
-If the ticket has a **Prerequisites** section, verify that each prerequisite is actually met before going further. Check concretely — look for the entities, files, features, endpoints, or other artifacts that the prerequisites describe. If any prerequisite is **not** met, stop and tell the user which prerequisites are unmet and why. Do not proceed to implementation. Let the user decide whether it makes sense to continue anyway.
+If ticket has a **Prerequisites** section, verify each item concretely — grep entity, open file, confirm feature exists. If any prerequisite is unmet, stop and tell user which and why. Don't proceed; let user decide whether to continue.
 
-## Phase 3: Clarify
+## Phase 3: Resolve Open Questions
 
-Before implementing, identify and ask the user about:
-- **Ambiguities**: Unclear requirements or missing details
-- **Contradictions**: Conflicts between the ticket and existing code
-- **Design decisions**: Choices that could go multiple ways
-- **Gaps**: Missing information needed to implement
+`/create-ticket` already triaged questions into three buckets — design-level went to user, defer-class to **Open Decisions**, research-class settled before writing. Don't re-ask settled items.
 
-Present your findings and questions clearly. Wait for user responses before proceeding.
+Your job:
+
+- **Open Decisions** — make the call. Use listed default unless research surfaces clear reason to deviate. Escalate to user only if (a) you disagree with default after reading code, or (b) decision is larger than the ticket framed.
+- **New ambiguities found while reading** — ask user only if design-level, contradicts ticket or existing code, or unanswerable by reading more code. Research first; ask second.
+- **Local taste** (idiom, naming, micro-style) — decide. Don't pad user's queue.
+
+If nothing blocking, go straight to implementation.
 
 ## Phase 4: Implement
 
-Once requirements are clear:
-1. Create a todo list to track implementation steps
-2. Implement the feature following existing code patterns
-3. Build and test frequently to catch errors early
-4. Mark todos complete as you progress
+1. Track work with todo tool — one todo per Implementation step is a reasonable default for Implementation tickets; group differently for Design/Refactoring shapes.
+2. Follow Implementation steps in order written — they're sequenced for dependencies.
+3. Mirror patterns named in the ticket (analogue tickets, code anchors); don't invent parallel structures.
+4. Mark todos complete as you go — don't batch.
+
+### Tests
+
+Add tests for non-trivial logic, invariants, and regressions — be judicious. 100% coverage is **not** a goal. Every test is maintenance overhead; low-value tests bleed time without catching bugs. If ticket's Test Plan is purely manual, that's intentional — don't invent unit tests just to have them.
 
 ## Phase 5: Verify
 
-1. Run a final build/test pass to ensure no errors
-2. Review the implementation for completeness
+1. Final `dotnet build -o /tmp/build-check` and `dotnet test` pass.
+2. Walk **Acceptance Criteria** item by item — each is unambiguously pass/fail by code inspection or test. If any fails, fix before moving on.
+3. Walk **Test Plan** item by item where you can; where you can't, ask user. Don't claim done on UI/feature work without exercising it.
+4. If any Acceptance Criteria or Test Plan item can't be verified (e.g., requires hardware, external account), say so explicitly — don't claim success.
+5. If ticket is missing **Acceptance Criteria** or **Test Plan** entirely, flag to user as a ticket-quality smell — those sections should exist on every ticket. Don't fabricate criteria post-hoc; note the gap and proceed with whatever verification you can.
 
-## Phase 6: Document
+## Phase 6: Self-review
 
-1. Move the completed ticket from `docs/tickets/` to `docs/tickets/complete/`, prefixing the filename with today's date in `yyyy-mm-dd` format (e.g., `2026-02-16 My Ticket.md`). Use `git mv` for this so the file's history is preserved in a single rename commit.
-2. Add a "## Learnings" section to the bottom of the completed ticket documenting:
-   - **Architectural decisions**: Design choices made during implementation and why (e.g., "Used X pattern instead of Y because...")
-   - **Problems encountered**: Bugs, gotchas, or unexpected behavior you ran into and how they were resolved
-   - **Interesting tidbits**: Non-obvious things learned about the codebase, frameworks, or domain that could be useful for future work
-   - **Workarounds / limitations**: Framework constraints or quirks that required workarounds, and whether the workaround is permanent or could be revisited
-   - **Related areas affected**: Other parts of the codebase that were unexpectedly touched or that may need future attention
-   - **Rejected alternatives**: Approaches that were considered but not taken, and why — to prevent future work from hitting the same dead ends
-3. If this ticket implements or changes a game design feature, update `docs/game-design.md` accordingly (add new sections, correct outdated descriptions, etc.). The game design doc is a living reference — it should always reflect the current state of the game's design.
-4. Update the relevant `docs/` reference file(s) with any **reusable** patterns learned during this ticket. This is the key self-learning step -- distill what's generally useful (new patterns confirmed, gotchas discovered) vs. what's ticket-specific. Examples:
-   - Discovered a new gotcha or recurring pattern? Add it to the relevant reference doc
-   - New API convention worth documenting? Add to the appropriate docs
-   - Don't duplicate the full ticket narrative -- just the distilled, reusable bits
+Quick pass before declaring done — analogue to `/create-ticket`'s Phase 5:
 
-## Phase 7: Post-feedback updates
+- Every Implementation step actually addressed? No silent skips, no "I'll come back to this."
+- Scope held? No drive-by refactors, extra abstractions, or features beyond the ticket. If you found something worth changing outside scope, note it for a follow-up ticket — don't roll it in.
+- No dead code left behind — unused params, commented-out blocks, half-finished branches.
+- Constraints & Gotchas all respected? Re-read that section against the diff.
+- Open Decisions all resolved? Each has a chosen path reflected in code (worth capturing in Learnings).
 
-If the user reports bugs or issues after initial implementation and you fix them, update the learnings:
-1. Add new problems/gotchas discovered during bugfixing to the completed ticket's **Learnings** section
-2. Distill any reusable patterns or gotchas into the relevant `docs/` reference file(s)
+Fix anything caught before moving on.
 
-This ensures hard-won debugging knowledge isn't lost just because it came after the initial implementation pass.
+## Phase 7: Document
+
+1. Move ticket from `docs/tickets/` to `docs/tickets/complete/`, prefixing filename with today's date in `yyyy-mm-dd` format (e.g., `2026-04-24 my-ticket.md`). Use `git mv` to preserve history as a rename.
+2. Add a `## Learnings` section to the bottom of the completed ticket. Capture:
+   - **Architectural decisions** — design choices made during implementation and why (incl. how Open Decisions resolved).
+   - **Problems encountered** — bugs, gotchas, unexpected behavior, how resolved.
+   - **Interesting tidbits** — non-obvious things learned about the codebase, frameworks, or domain.
+   - **Workarounds / limitations** — framework constraints that forced workarounds; permanent vs. revisitable.
+   - **Related areas affected** — other codebase parts touched or that may need future attention.
+   - **Rejected alternatives** — approaches considered but not taken, and why — keeps future work from hitting the same dead ends.
+3. If ticket implements or changes a game design feature, update `docs/game-design.md` (and sub-docs: `heroes.md`, `relics.md`, `stamps.md`, `bosses.md`, `sector-map.md`, `lock-resolution.md`, `aesthetic.md`, `colors.md`) to reflect new state. Design docs are a living reference — must match the shipped game.
+4. Update relevant `docs/` reference file(s) with **reusable** patterns learned. Distill the generally-useful bits — new gotchas, confirmed patterns, API conventions — not ticket-specific narrative. Don't duplicate the ticket; reference it from the doc if useful.
+
+## Phase 8: Post-feedback updates
+
+If user reports bugs or issues after initial implementation and you fix them:
+
+1. Append new problems/gotchas to completed ticket's **Learnings** section.
+2. Distill reusable patterns into relevant `docs/` reference file(s).
+
+Hard-won debugging knowledge from the bugfix pass is as valuable as from initial implementation — don't drop it on the floor.
 
 ## Important Notes
 
-- Ask clarifying questions early, but also ask if new questions arise during implementation
-- Use the todo list to track progress
-- Keep the user informed of your progress
+- Ask clarifying questions early if needed; also if new ones arise mid-implementation.
+- Use todos to track progress; mark complete as you go.
+- Keep user informed of progress — short updates at key moments (found, blocked, changed direction).
