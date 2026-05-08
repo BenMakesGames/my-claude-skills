@@ -110,10 +110,12 @@ Example entries:
 2. **Inline list vs. dedicated VFX class** — inline simpler; dedicated right if reuse is imminent. Default: inline.
 
 ## Acceptance Criteria
-Inspectable assertions defining "done" — state, signatures, file existence, enum values, behavioral facts. Each unambiguously pass/fail by code inspection or unit test. **Distinct from Test Plan**: *what must be true*, not *how to verify*. Don't restate Test Plan steps.
+Verifiable assertions defining "done" — user-visible behavior, public API outcomes, test-observable invariants, and (when the ticket *is* about adding code shape) enum values, registry entries, or file existence. Each unambiguously pass/fail by code inspection or unit test. **Distinct from Test Plan**: *what must be true*, not *how to verify*. Don't restate Test Plan steps.
 
-- [ ] Example: "`HeroTypeInfo.Info[HeroType.Ansa]` populated with starting bag, starting Coin, portrait, and flavor fields matching `docs/heroes.md §Ansa`."
-- [ ] Example: "`Encounter.ApplyBossModifier` switch over `BossModifierType` is exhaustive: every enum value handled, no `default` fallthrough."
+**Avoid in AC**: private field names, internal state transitions, statement ordering inside a method. Those lock the implementer into one shape when other shapes satisfy the same behavior — they belong in Constraints or Implementation.
+
+- [ ] Example (registry-shape ticket — code shape *is* the deliverable): "`HeroTypeInfo.Info[HeroType.Ansa]` populated with starting bag, starting Coin, portrait, and flavor fields matching `docs/heroes.md §Ansa`."
+- [ ] Example (behavioral ticket): "With `SoftDropDestroys` active, a soft-drop press destroys exactly one piece — the held key has no further effect until released and re-pressed."
 
 ## Implementation
 Flat numbered list. **No grouping subsections** — if ticket needs Model / Service / UI sub-headers, split it or re-sequence into one linear flow.
