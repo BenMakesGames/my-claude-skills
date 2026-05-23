@@ -1,3 +1,17 @@
+#### General usage
+
+1. `/propose-ticket <describe what you're looking to build>`
+   * Claude will ask you for more details
+   * Not necessary if what you want to make is small or well-defined (skip to `/write-ticket`, below)
+2. `/write-ticket <describe what you want>`
+   * If you just finished discussing with Claude via `/propose-ticket`, then simply type `/write-ticket as discussed` or `/write-ticket ^` or similar
+3. `/implement-ticket <name of ticket>`
+   * To keep context window small, run this from a fresh conversation (after `/clear`, for example)
+4. `/architecture-retro`
+   * Searches through recently-completed tickets for common problems, and recommends new tickets to clean up techdebt
+
+> 🧚 **Hey, listen!** [Check out my games on Steam](https://store.steampowered.com/search/?publisher=benmakesgames.com), or [support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)! Thanks! :)
+
 #### /architecture-retro
 
 Claude will look over code & recently-completed tickets and build up a prioritized-list of pain-points & other tech debt.
