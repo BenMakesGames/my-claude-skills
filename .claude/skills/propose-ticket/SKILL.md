@@ -35,6 +35,7 @@ This is the part that distinguishes a proposal from a transcription. Take the li
 - **Ambiguities** — phrasings with more than one reasonable reading. Name the readings.
 - **Ripple effects & edge cases** the request doesn't mention — UI that keys off the thing being changed, persistence/save implications, balance, ordering, empty/boundary states.
 - **Framing mismatches** — where the user's mental model of how it works diverges from how the code actually works. (e.g. items the user listed as a flat group that the code treats as three different *kinds*.)
+- **Your own working assumptions** — not just the request's. The "it works like X" premises your *recommendation* leans on. Make each visible and tag it **verified-in-source** or **unverified**; verify the load-bearing ones now. An unverified premise stated as fact is the most dangerous thing in a proposal — it looks like a finding. Questioning these is generative: confirming or breaking one routinely uncovers adjacent bugs or cleanup the request never mentioned.
 
 A request that looks contiguous/simple often isn't once you map it to the code. Your job is to find that gap before a ticket freezes the wrong assumption.
 
@@ -46,12 +47,14 @@ Present, then iterate. A good first pass back to the user includes:
 - **Implementation options** — 1–3 viable shapes with tradeoffs, one-line each; recommend one and say why.
 - **Gotchas** — the silent-break integration points, broken tests, save/compat notes, behavioral consequences.
 - **Between-the-lines items** from Phase 2 — assumptions, contradictions, ambiguities — each as a concrete point to resolve.
+- **Assumptions ledger** — the premises your recommendation rests on, each tagged verified / needs-confirm. Volunteer it; don't wait for the user to ask "what else are you assuming?"
 
 Then **bucket the open questions**:
 
 - **Ask the user** — design-level calls only they can make: which interpretation, scope in/out, naming/UX intent, whether a surfaced contradiction is intentional. Use `AskUserQuestion`; use option previews when comparing concrete shapes (code sketches, layouts). Keep it to one focused round at a time — don't dump every question at once.
 - **Decide yourself by research** — anything the codebase can answer. Go read it; don't ask.
 - **Park for the ticket** — local-taste / implementer-level choices (data structure, field names, easing) that don't need deciding now. Note them as eventual "Open Decisions" rather than litigating them here.
+- **Spin off** — adjacent bugs or cleanup the investigation surfaced that are out of scope for this feature. Note as a *separate* follow-up ticket; don't bundle a discovered refactor into the feature ticket.
 
 Re-research when an answer opens a new question. Loop until you and the user genuinely agree on the shape — feasibility, chosen approach, scope, and the resolved assumptions. Don't rush to the handoff while real forks are open.
 
