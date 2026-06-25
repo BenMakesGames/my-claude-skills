@@ -6,13 +6,18 @@ General workflow:
    * Claude will ask you for more details
    * Not necessary if what you want to make is small or well-defined (skip to `/write-ticket`, below)
 2. `/create-ticket <describe what you want>`
-   * If you just finished discussing with Claude via `/propose-ticket`, then simply type `/write-ticket as discussed` or `/write-ticket ^` or similar
+   * If you just finished discussing with Claude via `/propose-ticket`, simply type `/write-ticket` alone or with some final details
 3. `/implement-ticket <name of ticket>`
    * To keep context window small, run this from a fresh conversation (after `/clear`, for example)
 4. `/architecture-retro`
    * Searches through recently-completed tickets for common problems, and recommends new tickets to clean up techdebt
 
 > 🧚 **Hey, listen!** [Check out my games on Steam](https://store.steampowered.com/search/?publisher=benmakesgames.com), or [support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)! Thanks! :)
+
+## Other recommended skills
+
+* [Cursor's *Thermo-Nuclear Code Quality Review*](https://github.com/cursor/plugins/blob/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md)
+  * Run after every implemented ticket; `/create-ticket` for those issues you agree are high-value
 
 ## Skill reference
 
