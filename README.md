@@ -10,4 +10,5 @@ Instead, I use:
    - [This repo's copy](./.claude/skills/thermo-nuclear-code-quality-review/SKILL.md)
 3. A custom "Open in Claude Code" right-click action for Windows Explorer; `.reg` file available in this repo: [add-open-in-claude-code.reg](./add-open-in-claude-code.reg)
 4. My own "IDE", [MiniIDE](https://github.com/BenMakesGames/MiniIDE), but I recommend you make your own: mine is optimized for _my_ workflow; your workflow may be different
+5. [TortoiseGit](https://tortoisegit.org/) (I just love right-clicking on things in Windows Explorer, I guess!)
 
