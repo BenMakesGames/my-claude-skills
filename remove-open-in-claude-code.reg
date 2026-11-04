@@ -1,0 +1,8 @@
+Windows Registry Editor Version 5.00
+
+; Removes "Open in Claude Code" from the Explorer right-click menu for the current user.
+; The leading "-" deletes each key along with its command subkey.
+
+[-HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenInClaudeCode]
+
+[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenInClaudeCode]

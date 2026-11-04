@@ -1,0 +1,43 @@
+Windows Registry Editor Version 5.00
+
+; Adds "Open in Claude Code" to the Explorer right-click menu for the current user.
+; Works for any username: paths use environment variables, which requires REG_EXPAND_SZ.
+; .reg files can only write that type as hex(2) (UTF-16LE, null-terminated). Decoded:
+;   Icon:    %USERPROFILE%\.local\bin\claude.exe,0
+;   command: "%LOCALAPPDATA%\Microsoft\WindowsApps\wt.exe" -d "%V" "%USERPROFILE%\.local\bin\claude.exe"
+
+; Right-click on a folder's empty background
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenInClaudeCode]
+@="Open in Claude Code"
+"Icon"=hex(2):25,00,55,00,53,00,45,00,52,00,50,00,52,00,4f,00,46,00,49,00,4c,00,45,00,\
+  25,00,5c,00,2e,00,6c,00,6f,00,63,00,61,00,6c,00,5c,00,62,00,69,00,6e,00,\
+  5c,00,63,00,6c,00,61,00,75,00,64,00,65,00,2e,00,65,00,78,00,65,00,2c,00,\
+  30,00,00,00
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenInClaudeCode\command]
+@=hex(2):22,00,25,00,4c,00,4f,00,43,00,41,00,4c,00,41,00,50,00,50,00,44,00,41,00,\
+  54,00,41,00,25,00,5c,00,4d,00,69,00,63,00,72,00,6f,00,73,00,6f,00,66,00,\
+  74,00,5c,00,57,00,69,00,6e,00,64,00,6f,00,77,00,73,00,41,00,70,00,70,00,\
+  73,00,5c,00,77,00,74,00,2e,00,65,00,78,00,65,00,22,00,20,00,2d,00,64,00,\
+  20,00,22,00,25,00,56,00,22,00,20,00,22,00,25,00,55,00,53,00,45,00,52,00,\
+  50,00,52,00,4f,00,46,00,49,00,4c,00,45,00,25,00,5c,00,2e,00,6c,00,6f,00,\
+  63,00,61,00,6c,00,5c,00,62,00,69,00,6e,00,5c,00,63,00,6c,00,61,00,75,00,\
+  64,00,65,00,2e,00,65,00,78,00,65,00,22,00,00,00
+
+; Right-click on a folder itself
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenInClaudeCode]
+@="Open in Claude Code"
+"Icon"=hex(2):25,00,55,00,53,00,45,00,52,00,50,00,52,00,4f,00,46,00,49,00,4c,00,45,00,\
+  25,00,5c,00,2e,00,6c,00,6f,00,63,00,61,00,6c,00,5c,00,62,00,69,00,6e,00,\
+  5c,00,63,00,6c,00,61,00,75,00,64,00,65,00,2e,00,65,00,78,00,65,00,2c,00,\
+  30,00,00,00
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenInClaudeCode\command]
+@=hex(2):22,00,25,00,4c,00,4f,00,43,00,41,00,4c,00,41,00,50,00,50,00,44,00,41,00,\
+  54,00,41,00,25,00,5c,00,4d,00,69,00,63,00,72,00,6f,00,73,00,6f,00,66,00,\
+  74,00,5c,00,57,00,69,00,6e,00,64,00,6f,00,77,00,73,00,41,00,70,00,70,00,\
+  73,00,5c,00,77,00,74,00,2e,00,65,00,78,00,65,00,22,00,20,00,2d,00,64,00,\
+  20,00,22,00,25,00,56,00,22,00,20,00,22,00,25,00,55,00,53,00,45,00,52,00,\
+  50,00,52,00,4f,00,46,00,49,00,4c,00,45,00,25,00,5c,00,2e,00,6c,00,6f,00,\
+  63,00,61,00,6c,00,5c,00,62,00,69,00,6e,00,5c,00,63,00,6c,00,61,00,75,00,\
+  64,00,65,00,2e,00,65,00,78,00,65,00,22,00,00,00
