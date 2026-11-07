@@ -1,0 +1,2 @@
+# LF everywhere, whatever anyone's core.autocrlf says; git detects binaries (PNGs etc.) and leaves them alone.
+* text=auto eol=lf

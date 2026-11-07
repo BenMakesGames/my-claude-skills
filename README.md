@@ -4,7 +4,7 @@ I no longer use them; they have been deleted from this repo. If you want to see 
 
 Instead, I use:
 
-1. This repo's `CLAUDE.md`, which I copy-paste into all new project roots
+1. This repo's `CLAUDE.md` and `.gitattributes`, which I copy-paste into all new project roots
 2. Cursor team's "thermo nuclear code quality review" skill, which I have copied in this repo because I use it so often, and don't want to have to dig it out of _their_ repo's git history if they ever decide to delete it
    - [Official skill, from their repo](https://github.com/cursor/plugins/blob/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md)
    - [This repo's copy](./.claude/skills/thermo-nuclear-code-quality-review/SKILL.md)
