@@ -1,15 +1,13 @@
-I used to have my own set of Claude Code skills that I used for projects.
+This repo contains:
 
-I no longer use them; they have been deleted from this repo. If you want to see them, check the git history!
+1. `CLAUDE.md` and `.gitattributes`, which I copy-paste into all new project roots.
+2. Two skills:
+   1. An auto-invoked `commit` skill that reminds the agent to record the *intent* of the changes in the commit's message in case, like me, you're in the habit of just asking Claude to "commit & push" with no additional context. (And in case, like me, you run `/clear` a lot, it also reads your recent conversation transcripts to get this context.)
+   2. A `/two-lens-review` skill that combines Cursor's opinionated, "simple is better" Thermo-nuclear Code Quality Review skill ([original skill, from their repo](https://github.com/cursor/plugins/blob/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md)) with Matt Pocock's less-opinionated, intent & convention-driven review skill ([original skill, from his repo](https://github.com/mattpocock/skills/blob/main/skills/engineering/code-review/SKILL.md)) by running a modified version of each with separate subagents, then comparing their findings to one another and the codebase to produce a final list of findings and recommendation.
+3. A custom "Open in Claude Code" right-click action for Windows Explorer; `.reg` file available in this repo: [add-open-in-claude-code.reg](./add-open-in-claude-code.reg).
 
-Instead, I use:
+Also worth checking out:
 
-1. This repo's `CLAUDE.md` and `.gitattributes`, which I copy-paste into all new project roots
-2. Cursor team's "thermo nuclear code quality review" skill, which I have copied in this repo because I use it so often, and don't want to have to dig it out of _their_ repo's git history if they ever decide to delete it
-   - [Official skill, from their repo](https://github.com/cursor/plugins/blob/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md)
-   - [This repo's copy](./.claude/skills/thermo-nuclear-code-quality-review/SKILL.md)
-3. A custom "Open in Claude Code" right-click action for Windows Explorer; `.reg` file available in this repo: [add-open-in-claude-code.reg](./add-open-in-claude-code.reg)
-4. My own "IDE", [MiniIDE](https://github.com/BenMakesGames/MiniIDE), but I recommend you make your own: mine is optimized for _my_ workflow; your workflow may be different
-5. [TortoiseGit](https://tortoisegit.org/) (I just love right-clicking on things in Windows Explorer, I guess!)
-
-Also check out [WRITING-STYLES.md](./WRITING-STYLES.md) for some vocab that may help you tailor your agent's writing style to match you preferences.
+1. [WRITING-STYLES.md](./WRITING-STYLES.md) for some vocab that may help you tailor your agent's writing style to match you preferences.
+2. My "IDE", [MiniIDE](https://github.com/BenMakesGames/MiniIDE), but not to use - you should make your own! Mine is optimized for _my_ workflows; _your_ workflows may be different.
+3. [TortoiseGit](https://tortoisegit.org/) if, like me, you just love right-clicking on things in Windows Explorer.
