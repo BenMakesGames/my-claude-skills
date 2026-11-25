@@ -3,7 +3,7 @@ This repo contains:
 1. `CLAUDE.md` and `.gitattributes`, which I copy-paste into all new project roots.
 2. Two skills:
    1. An auto-invoked `commit` skill that reminds the agent to record the *intent* of the changes in the commit's message in case, like me, you're in the habit of just asking Claude to "commit & push" with no additional context. (And in case, like me, you run `/clear` a lot, it also reads your recent conversation transcripts to get this context.)
-   2. A `/two-lens-review` skill that combines Cursor's opinionated, "simple is better" Thermo-nuclear Code Quality Review skill ([original skill, from their repo](https://github.com/cursor/plugins/blob/main/cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md)) with Matt Pocock's less-opinionated, intent & convention-driven review skill ([original skill, from his repo](https://github.com/mattpocock/skills/blob/main/skills/engineering/code-review/SKILL.md)) by running a modified version of each with separate subagents, then comparing their findings to one another and the codebase to produce a final list of findings and recommendation.
+   2. A `/two-lens-review` skill that reviews code for the two things that matter when *agents* write and maintain it: does it meet the business requirement, with a test that proves it? And will the next agent's change break something while every test stays green? A separate subagent takes each question, then every finding is verified against the code (by experiment, where possible) before being reported.
 3. A custom "Open in Claude Code" right-click action for Windows Explorer; `.reg` file available in this repo: [add-open-in-claude-code.reg](./add-open-in-claude-code.reg).
 
 Also worth checking out:

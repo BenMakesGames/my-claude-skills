@@ -1,67 +1,121 @@
 ---
 name: two-lens-review
-description: Review code (a change, files, a folder, or a whole codebase) through two lenses in parallel sub-agents (Simplicity, Conventions), then cross-examine each lens's findings against the code through the other lens, and present one ranked list of findings and proposals.
+description: Review code (a change, files, a folder, or a whole codebase) for the two things that matter when agents write and maintain the code. Does it meet the business requirement, with a test that proves it? And will the next agent's change break something while every test stays green? Two independent sub-agents each take one lens, then you verify every finding against the code and present a short report that a reader who doesn't know the code can follow.
 disable-model-invocation: true
 ---
 
-Two reviewers that disagree on purpose:
+## Why this review exists
 
-- **Simplicity** ([`lenses/simplicity.md`](lenses/simplicity.md), from Cursor's thermo-nuclear review): could this be dramatically simpler? Ignores project rules and goals; believes simpler is better.
-- **Conventions** ([`lenses/conventions.md`](lenses/conventions.md), from Matt Pocock's code-review): does it follow this project's documented standards, and does it do what was intended?
+Agents write and change this code; people care that the business requirements are met. So the code is judged by two
+questions, not by how it reads to a human reviewer:
 
-Each runs in its own sub-agent so neither colours the other. Then you **cross-examine**: re-read the cited code and test every finding through the opposite lens, so a Simplicity proposal that breaks a project rule, or a Conventions fix that adds complexity, is caught before it reaches the user.
+- **Requirement** ([`lenses/requirement.md`](lenses/requirement.md)): what does this change do for the business? Is
+  that done? Does a test prove it at a boundary that a customer or caller actually uses?
+- **Next change** ([`lenses/next-change.md`](lenses/next-change.md)): when an agent changes this area later, where will
+  it go wrong while every test stays green?
+
+Agents and people both make mistakes, and the author misses its own, so each lens runs in its own sub-agent. Neither
+sees the author's reasoning or the other lens. You then check every finding against the code and keep only those with
+a concrete consequence.
+
+**Out of scope, unless it causes one of the problems above:** prose style, naming taste, file length, small
+duplication, "public only for tests", and conventions that exist for human readers.
 
 ## 1. Pin the target
 
-Review whatever the user asks for; git is optional. Turn the request into something concrete a sub-agent can read:
+Review whatever the user asks for; git is optional. Turn the request into something concrete that a sub-agent can read:
 
-- **A change** → a diff command. A ref, branch, or "since X" → `git diff <ref>...HEAD` (three-dot: against the merge-base). "Uncommitted changes" → `git diff HEAD`, plus untracked files from `git ls-files --others --exclude-standard` (the diff omits them). "The previous commit", "today's commits", etc. → the matching ref range.
-- **Existing code** (files, a folder, "the entire codebase", in a git repo or not) → the list of paths.
+- **A change** → a diff command. A ref, branch or "since X" → `git diff <base>...HEAD` (three dots: against the
+  merge-base). Find the real base: a feature branch often comes off an integration branch rather than the main branch,
+  so pick the remote branch that HEAD has the fewest commits on top of. "Uncommitted changes" → `git diff HEAD`, plus
+  untracked files from `git ls-files --others --exclude-standard`.
+- **Existing code** (files, a folder, "the entire codebase") → the list of paths.
 - **Nothing specified** → ask the user what to review.
 
-Done when the target is concrete and non-empty: the ref resolves and the diff has content, or the paths exist. A bad target fails here, not inside two sub-agents.
+Done when the target is concrete and non-empty. Note who wrote it: when the user didn't write the change, the report
+must not assume they know it.
 
-## 2. Gather the intent sources
+## 2. Find where this project records intent
 
-Collect every source that applies, each labelled:
+Projects keep intent in different places, and some keep little. Don't assume any one place. Look, and follow what
+this project does. When the project's own instructions say where requirements live, go there first, and don't hunt
+in places that the project doesn't use.
 
-- **Stated goal**: anything the user said when invoking (e.g. "goal: make X do Y", or a path to a file).
-- **Commit messages**: when the target is a range of commits, `git log <range> --format='%h%n%B'`.
-- **Recent prompts**: when the target includes uncommitted or never-committed work, `node <this skill's directory>/../commit/recent-prompts.js`, if that file exists. It prints the user's prompts since the last commit (or ever, outside a git repo), across `/clear`s.
+Check these, and use each one that has content:
 
-With no sources at all (e.g. a whole-codebase review with no stated goal), the Intent axis has nothing to check against: tell the Conventions sub-agent to skip it and report "no intent available".
+- **Stated goal**: anything the user said when invoking.
+- **Commit messages**: `git log <range> --format='%h%n%B'`. On some projects these are the main record, with long
+  bodies.
+- **Instruction and doc files near the code**: `CLAUDE.md`, `AGENTS.md` and `README` files at any depth along the
+  changed paths (the nearest one is scoped to its directory), and a `docs/` folder.
+- **Docs elsewhere that those files point to**: for example a sibling docs repository, or extra directories listed in
+  the agent's settings.
+- **A ticket**: a key in the branch name or commits (such as `ABC-123`) → fetch it through a connected tracker tool,
+  if one is connected, with any spec it links. Keep its text verbatim.
+- **Recent prompts**: for uncommitted work, `node <this skill's directory>/../commit/recent-prompts.js`, if that file
+  exists.
+- **The tests**: on a lightly documented project, test names and assertions are often the most exact record of the
+  intended behaviour.
+
+Pass the sources to the lenses, each labelled. Also list the places you looked that had nothing. Tickets often
+prescribe implementation details: label those as prescribed design, because the requirement lens separates them from
+the business requirement.
+
+When the sources say little, the requirement lens infers the requirement from the code and its tests, and says that it
+did. A thin requirement is itself worth one line in the report, because the next agent will have the same problem.
 
 ## 3. Spawn both lenses in parallel
 
 Issue both sub-agent calls together, in the foreground. Each prompt contains:
 
-- The target from step 1: the diff command (plus any untracked files), or the paths to review.
-- The absolute path of its lens file, with: "Read this file and follow it as your review instructions."
-- Conventions only: the labelled intent sources from step 2.
+- the target from step 1;
+- the absolute path of its lens file, with "Read this file and follow it as your review instructions.";
+- the labelled sources from step 2 (both lenses: the next-change lens needs them to guess the likely next change);
+- facts you already checked, so the lens doesn't redo them;
 - "Perform this review yourself, directly. Do not invoke skills or spawn further agents."
 
-## 4. Cross-examine
+Don't pass your own opinion of the code. A lens that is handed a hypothesis tends to confirm it.
 
-Read both lens files, then work through every finding from both reports:
+## 4. Verify
 
-1. **Verify.** Open the cited code. Correct a wrong location; drop a finding the code doesn't support, and note it under _Dropped_.
-2. **Through the other lens.**
-   - Simplicity finding → does its proposal break a documented standard, an existing convention, or the intent (e.g. a "code judo" rewrite that's out of scope)? Adjust it to fit, or keep it and mark it a **tradeoff**, naming the rule it bends.
-   - Conventions finding → does its fix add indirection or concepts? Is there one restructuring that resolves it along with other findings? If so, fold them into one proposal.
-3. **Merge.** Findings both lenses raised about the same code become one finding tagged with both lenses: the strongest signal in the review.
+Read both lens files. Then, for every finding from both reports:
 
-Done when every finding is verified against the code and has been read through the opposite lens.
+1. **Open the cited code.** Correct a wrong location. Drop a finding that the code doesn't support, and list it under
+   *Dropped*.
+2. **Name the consequence.** Finish this sentence concretely: "If this isn't fixed, ___ happens to ___." The subject is
+   a customer (now) or the next agent (later). If you can't finish the sentence, drop the finding.
+3. **Test the claim when you can.** Both lenses run on the same model as you, so their blind spots overlap with yours.
+   Evidence from running code doesn't share them. When a finding claims that no test would catch a break, or that a
+   test protects a requirement, check it by experiment:
+   - Make the small break that the finding describes, run the tests that should catch it, and see whether they fail.
+   - Work in a throwaway copy: a `git worktree`, or a copy of the project in the scratchpad. Never touch the user's
+     working tree.
+   - Find the test command where the project documents it: its instruction files, `package.json` scripts,
+     `composer.json`, a `.sln` or `.csproj`, a `Makefile`. If the project already has a mutation-testing tool, you may
+     use it on the changed lines.
+   - Keep to the few findings that matter most. When the tests can't run here, skip the experiment and mark the finding
+     as unproven.
+4. **Check the fix.** A fix must not create a new trap: a new copy of a rule, or a test that pins internals. A fix that
+   restructures code outside the change's scope becomes a **follow-up ticket**, not a fix in this change.
+5. **Merge.** When both lenses flag the same code, make it one finding. That is the strongest signal in the review.
 
 ## 5. Present
 
-Lead with **Proposals**: restructurings that resolve several findings at once, each listing the findings it resolves. Then **Findings**, ranked:
+Write for a reader who doesn't know the code and may not have written it. Use plain words and full sentences. Explain
+every class or term the first time it appears, in a few words.
 
-1. **Blocker**: intent missing or wrong; a Simplicity presumptive blocker; a hard documented-standard violation.
-2. **Should fix**: other Simplicity findings; Intent scope creep.
-3. **Consider**: baseline smells and other judgement calls.
+1. **What this change does**: two to four sentences in business terms. Who was affected by the problem, and what
+   happens now. Then one line naming the sources that the requirement came from, or saying that it was inferred.
+2. **Is the requirement met?** Yes, partly or no, and the test that proves each part. Say which parts of the ticket
+   were design instructions rather than requirements, and whether the change departs from them. A departure is only a
+   finding when it loses the requirement.
+3. **Findings**, in three groups. Each finding starts with its consequence, then where (`path:line`), then the fix,
+   with its lens tag (`[requirement]`, `[next change]`, or both). Mark a finding **proven** when an experiment in step 4
+   confirmed it, and say what you broke and what didn't fail:
+   - **Fix now**: the requirement is missed, or a customer is affected now.
+   - **Fix before merge**: a silent-regression trap, where a likely next change breaks something and no test fails.
+   - **Follow-up ticket**: real friction or a trap whose fix is out of this change's scope.
+4. **Dropped**: one line each, with the reason.
+5. **Verdict**: one line saying whether it's ready, and what blocks it.
 
-Each finding is one line plus its proposal: `path:line`, lens tag(s) (`[simplicity]`, `[standards: <file> › <rule>]`, `[intent: "<quoted line>"]`), the problem, the fix, and a **tradeoff** note where cross-examination found one. Lens tags stay visible on every finding, so a ranking never hides which lens raised what.
-
-Close with _Dropped_ (one line each, with why) and a one-line verdict: blocker count and whether the code is ready.
-
-Be direct, serious, and demanding about quality, without being rude. Prefer a smaller number of high-conviction findings over a long list of cosmetic notes.
+Prefer three findings that matter over ten that don't. If nothing has a concrete consequence, say so and stop.
